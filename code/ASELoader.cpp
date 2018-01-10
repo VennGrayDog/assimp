@@ -46,6 +46,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ASSIMP_BUILD_NO_ASE_IMPORTER
 
+#ifndef ASSIMP_BUILD_NO_3DS_IMPORTER
+
 // internal headers
 #include "ASELoader.h"
 #include "StringComparison.h"
@@ -1019,6 +1021,7 @@ void ASEImporter::ConvertMeshes(ASE::Mesh& mesh, std::vector<aiMesh*>& avOutMesh
 
                             // convert bones, if existing
                             if (!mesh.mBones.empty()) {
+                                ai_assert(avOutputBones);
                                 // check whether there is a vertex weight for this vertex index
                                 if (iIndex2 < mesh.mBoneVertices.size())    {
 
@@ -1319,5 +1322,7 @@ bool ASEImporter::GenerateNormals(ASE::Mesh& mesh)  {
     ComputeNormalsWithSmoothingsGroups<ASE::Face>(mesh);
     return false;
 }
+
+#endif // ASSIMP_BUILD_NO_3DS_IMPORTER
 
 #endif // !! ASSIMP_BUILD_NO_BASE_IMPORTER

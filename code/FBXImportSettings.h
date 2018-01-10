@@ -63,6 +63,7 @@ struct ImportSettings
         , readWeights(true)
         , preservePivots(true)
         , optimizeEmptyAnimationCurves(true)
+        , useLegacyEmbeddedTextureNaming(false)
     {}
 
 
@@ -137,6 +138,10 @@ struct ImportSettings
      *  values matching the corresponding node transformation.
      *  The default value is true. */
     bool optimizeEmptyAnimationCurves;
+
+    /** use legacy naming for embedded textures eg: (*0, *1, *2)
+    **/
+    bool useLegacyEmbeddedTextureNaming;
 };
 
 

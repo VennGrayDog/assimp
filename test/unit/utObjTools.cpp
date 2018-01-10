@@ -106,12 +106,12 @@ TEST_F( utObjTools, countComponents_TwoLines_Success ) {
     TestObjFileParser test_parser;
     std::string data( "-2.061493116917992e-15 -0.9009688496589661 \\\n-0.4338837265968323" );
     std::vector<char> buffer;
-    buffer.resize( data.size() );
+    buffer.resize( data.size() + 1 );
     ::memcpy( &buffer[ 0 ], &data[ 0 ], data.size() );
+    buffer[ buffer.size() - 1 ] = '\0';
     test_parser.setBuffer( buffer );
-    static const size_t Size = 4096UL;
-    char data_buffer[ Size ];
 
     size_t numComps = test_parser.testGetNumComponentsInDataDefinition();
     EXPECT_EQ( 3U, numComps );
 }
+

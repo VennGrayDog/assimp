@@ -51,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ParsingUtils.h"
 #include "fast_atof.h"
 
-#include "SceneCombiner.h"
+#include <assimp/SceneCombiner.h>
 #include "GenericProperty.h"
 #include "SkeletonMeshBuilder.h"
 #include "ConvertToLHProcess.h"
@@ -471,7 +471,7 @@ void LWSImporter::BuildGraph(aiNode* nd, LWS::NodeDesc& src, std::vector<Attachm
 // Determine the exact location of a LWO file
 std::string LWSImporter::FindLWOFile(const std::string& in)
 {
-    // insert missing directory seperator if necessary
+    // insert missing directory separator if necessary
     std::string tmp;
     if (in.length() > 3 && in[1] == ':'&& in[2] != '\\' && in[2] != '/')
     {

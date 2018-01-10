@@ -1,11 +1,50 @@
+/*
+Open Asset Import Library (assimp)
+----------------------------------------------------------------------
+
+Copyright (c) 2006-2017, assimp team
+
+All rights reserved.
+
+Redistribution and use of this software in source and binary forms,
+with or without modification, are permitted provided that the
+following conditions are met:
+
+* Redistributions of source code must retain the above
+copyright notice, this list of conditions and the
+following disclaimer.
+
+* Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the
+following disclaimer in the documentation and/or other
+materials provided with the distribution.
+
+* Neither the name of the assimp team, nor the names of its
+contributors may be used to endorse or promote products
+derived from this software without specific prior
+written permission of the assimp team.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+----------------------------------------------------------------------
+*/
 #include <utility>
 #include "MMDPmxParser.h"
+#include "../contrib/utf8cpp/source/utf8.h"
 #include "Exceptional.h"
-#include "../contrib/ConvertUTF/ConvertUTF.h"
 
 namespace pmx
 {
-	/// インデックス値を読み込む
 	int ReadIndex(std::istream *stream, int size)
 	{
 		switch (size)
@@ -39,7 +78,6 @@ namespace pmx
 		}
 	}
 
-	/// 文字列を読み込む
 	std::string ReadString(std::istream *stream, uint8_t encoding)
 	{
 		int size;
@@ -60,15 +98,7 @@ namespace pmx
 			const unsigned int targetSize = size * 3; // enough to encode
 			char* targetStart = new char[targetSize]();
 			const char* targetReserved = targetStart;
-			ConversionFlags flags = ConversionFlags::lenientConversion;
-
-			ConversionResult conversionResult;
-			if( ( conversionResult = ConvertUTF16toUTF8(
-				(const UTF16**)&sourceStart, (const UTF16*)(sourceStart + size),
-				(UTF8**)&targetStart, (UTF8*)(targetStart + targetSize),
-				flags) ) != ConversionResult::conversionOK) {
-				throw DeadlyImportError( "Convert " + std::string(sourceStart) + " to UTF8 is not valid." );
-			}
+            utf8::utf16to8( sourceStart, sourceStart + size, targetStart );
 
 			result.assign(targetReserved, targetStart - targetReserved);
 			delete[] targetReserved;
@@ -186,8 +216,8 @@ namespace pmx
 
 	void PmxMaterial::Read(std::istream *stream, PmxSetting *setting)
 	{
-		this->material_name = std::move(ReadString(stream, setting->encoding));
-		this->material_english_name = std::move(ReadString(stream, setting->encoding));
+		this->material_name = ReadString(stream, setting->encoding);
+		this->material_english_name = ReadString(stream, setting->encoding);
 		stream->read((char*) this->diffuse, sizeof(float) * 4);
 		stream->read((char*) this->specular, sizeof(float) * 3);
 		stream->read((char*) &this->specularlity, sizeof(float));
@@ -206,7 +236,7 @@ namespace pmx
 		else {
 			this->toon_texture_index = ReadIndex(stream, setting->texture_index_size);
 		}
-		this->memo = std::move(ReadString(stream, setting->encoding));
+		this->memo = ReadString(stream, setting->encoding);
 		stream->read((char*) &this->index_count, sizeof(int));
 	}
 
@@ -223,8 +253,8 @@ namespace pmx
 
 	void PmxBone::Read(std::istream *stream, PmxSetting *setting)
 	{
-		this->bone_name = std::move(ReadString(stream, setting->encoding));
-		this->bone_english_name = std::move(ReadString(stream, setting->encoding));
+		this->bone_name = ReadString(stream, setting->encoding);
+		this->bone_english_name = ReadString(stream, setting->encoding);
 		stream->read((char*) this->position, sizeof(float) * 3);
 		this->parent_index = ReadIndex(stream, setting->bone_index_size);
 		stream->read((char*) &this->level, sizeof(int));
@@ -441,7 +471,7 @@ namespace pmx
 		stream->read((char*) &this->is_near, sizeof(uint8_t));
 	}
 
-	void PmxSoftBody::Read(std::istream *stream, PmxSetting *setting)
+    void PmxSoftBody::Read(std::istream * /*stream*/, PmxSetting * /*setting*/)
 	{
 		// 未実装
 		std::cerr << "Not Implemented Exception" << std::endl;
@@ -498,10 +528,10 @@ namespace pmx
 		this->setting.Read(stream);
 
 		// モデル情報
-		this->model_name = std::move(ReadString(stream, setting.encoding));
-		this->model_english_name = std::move(ReadString(stream, setting.encoding));
-		this->model_comment = std::move(ReadString(stream, setting.encoding));
-		this->model_english_comment = std::move(ReadString(stream, setting.encoding));
+		this->model_name = ReadString(stream, setting.encoding);
+		this->model_english_name = ReadString(stream, setting.encoding);
+		this->model_comment = ReadString(stream, setting.encoding);
+		this->model_english_comment = ReadString(stream, setting.encoding);
 
 		// 頂点
 		stream->read((char*) &vertex_count, sizeof(int));
@@ -575,7 +605,6 @@ namespace pmx
 			this->joints[i].Read(stream, &setting);
 		}
 
-		//// ソフトボディ
 		//if (this->version == 2.1f)
 		//{
 		//	stream->read((char*) &this->soft_body_count, sizeof(int));

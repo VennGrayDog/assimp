@@ -43,12 +43,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ASSIMP_BUILD_NO_EXPORT
 #ifndef ASSIMP_BUILD_NO_X_EXPORTER
+
 #include "XFileExporter.h"
 #include "ConvertToLHProcess.h"
 #include "Bitmap.h"
 #include "BaseImporter.h"
 #include "fast_atof.h"
-#include "SceneCombiner.h"
+#include <assimp/SceneCombiner.h>
 #include <assimp/DefaultIOSystem.h>
 #include <ctime>
 #include <set>
@@ -79,6 +80,10 @@ void ExportSceneXFile(const char* pFile,IOSystem* pIOSystem, const aiScene* pSce
     // invoke the exporter
     XFileExporter iDoTheExportThing( pScene, pIOSystem, path, file, &props);
 
+    if (iDoTheExportThing.mOutput.fail()) {
+        throw DeadlyExportError("output data creation failed. Most likely the file became too large: " + std::string(pFile));
+    }
+    
     // we're still here - export successfully completed. Write result to the given IOSYstem
     std::unique_ptr<IOStream> outfile (pIOSystem->Open(pFile,"wt"));
     if(outfile == NULL) {

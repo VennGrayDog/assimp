@@ -243,7 +243,6 @@ const unsigned int* MeshGeometry::ToOutputVertexIndex( unsigned int in_index, un
     ai_assert( m_mapping_counts.size() == m_mapping_offsets.size() );
     count = m_mapping_counts[ in_index ];
 
-//    ai_assert( count != 0 );
     ai_assert( m_mapping_offsets[ in_index ] + count <= m_mappings.size() );
 
     return &m_mappings[ m_mapping_offsets[ in_index ] ];
@@ -357,7 +356,7 @@ void MeshGeometry::ReadVertexData(const std::string& type, int index, const Scop
         // avoids losing the material if there are more material layers
         // coming of which at least one contains actual data (did observe
         // that with one test file).
-        const size_t count_neg = std::count_if(temp_materials.begin(),temp_materials.end(),std::bind2nd(std::less<int>(),0));
+        const size_t count_neg = std::count_if(temp_materials.begin(),temp_materials.end(),[](int n) { return n < 0; });
         if(count_neg == temp_materials.size()) {
             FBXImporter::LogWarn("ignoring dummy material layer (all entries -1)");
             return;
@@ -434,7 +433,11 @@ void ResolveVertexDataArray(std::vector<T>& data_out, const Scope& source,
     // deal with this more elegantly and with less redundancy, but right
     // now it seems unavoidable.
     if (MappingInformationType == "ByVertice" && ReferenceInformationType == "Direct") {
-		std::vector<T> tempData;
+        if ( !HasElement( source, indexDataElementName ) ) {
+            return;
+        }
+
+        std::vector<T> tempData;
 		ParseVectorDataArray(tempData, GetRequiredElement(source, dataElementName));
 
         data_out.resize(vertex_count);
@@ -451,10 +454,12 @@ void ResolveVertexDataArray(std::vector<T>& data_out, const Scope& source,
 		ParseVectorDataArray(tempData, GetRequiredElement(source, dataElementName));
 
         data_out.resize(vertex_count);
+        if ( !HasElement( source, indexDataElementName ) ) {
+            return;
+        }
 
         std::vector<int> uvIndices;
         ParseVectorDataArray(uvIndices,GetRequiredElement(source,indexDataElementName));
-
         for (size_t i = 0, e = uvIndices.size(); i < e; ++i) {
 
             const unsigned int istart = mapping_offsets[i], iend = istart + mapping_counts[i];

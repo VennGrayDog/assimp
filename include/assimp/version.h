@@ -82,6 +82,12 @@ ASSIMP_API unsigned int aiGetVersionMajor (void);
  */
 ASSIMP_API unsigned int aiGetVersionRevision (void);
 
+// ---------------------------------------------------------------------------
+/** @brief Returns the branchname of the Assimp runtime.
+ *  @return The current branch name.
+ */
+ASSIMP_API const char *aiGetBranchName();
+
 //! Assimp was compiled as a shared object (Windows: DLL)
 #define ASSIMP_CFLAGS_SHARED  0x1
 //! Assimp was compiled against STLport
@@ -105,3 +111,4 @@ ASSIMP_API unsigned int aiGetCompileFlags (void);
 #endif
 
 #endif // !! #ifndef AI_VERSION_H_INC
+
